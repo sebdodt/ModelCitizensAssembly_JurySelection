@@ -1,0 +1,14 @@
+---
+title: "Jury Selection 23"
+author: "Sebastian Dodt"
+date: "16/04/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Selection with 23 jury members
+
+Test
