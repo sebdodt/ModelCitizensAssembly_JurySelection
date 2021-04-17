@@ -59,6 +59,19 @@ responses[,13] <- as.integer(unlist(responses[,13]))
 ```
 
 
+Dealing with NAs
+```{r}
+sum(is.na(responses))
+for (row in 1:nrow(responses)) {
+  for (col in 1:ncol(responses)) {
+    if (is.na(responses[row,col]) == TRUE) {
+      if (row == 1) responses[row,col] <- responses[row,col-1] else
+        responses[row,col] <- responses[row-1,col]
+    } 
+  }
+}
+sum(is.na(responses))
+```
 
 Converting to numerical values
 ```{r}
@@ -66,10 +79,13 @@ rawdata_1 = responses[,c(5:15)]
 rawdata_1 = data.matrix(rawdata_1)
 rawdata = cbind(responses[,c(2:4)],rawdata_1)
 dim(rawdata)
-sum(is.na(rawdata))
+
 rawdata <- cbind(rawdata, seq(1,nrow(rawdata),1))
 rawdata <- rename(rawdata, Index = 'seq(1, nrow(rawdata), 1)')
 ```
+
+
+
 
 
 ```{r}
@@ -291,7 +307,7 @@ for (setrow in old.non.white.male$Index) {
   comb.old.non.white.male <- combinations(n = nrow(old.non.white.male) - 1, 
                                           r = cat8 - 1,
                                           old.non.white.male$Index[-setrow])
-  comb.old.non.white.male <- cbind(comb.old.non.white.male, rep(setrow, nrow(comb.oldnon.white.male)))
+  comb.old.non.white.male <- cbind(comb.old.non.white.male, rep(setrow, nrow(comb.old.non.white.male)))
 }
 
 
@@ -301,46 +317,66 @@ ncombinations <- nrow(comb.young.white.female) * nrow(comb.young.non.white.femal
   nrow(comb.old.white.female) * nrow(comb.old.non.white.female) * 
   nrow(comb.old.white.male) * nrow(comb.old.non.white.male) 
 
-#combinations matrix
-rep.1 <- comb.white.female[rep(seq_len(nrow(comb.white.female)), each = nrow(comb.non.white.female)), ]
-rep.2 <- comb.white.male[rep(seq_len(nrow(comb.white.male)), each = nrow(comb.non.white.male)), ]
-rep.3 
+
+##combinations matrix
+# adding young white female and young non-white female
+rep.1a <- comb.young.white.female[rep(seq_len(nrow(comb.young.white.female)), 
+                                      each = nrow(comb.young.non.white.female)),]
+rep.1b <- do.call(rbind, replicate(nrow(comb.young.white.female), 
+                                   comb.young.non.white.female, 
+                                   simplify=FALSE))
+rep.1c <- cbind(rep.1a, rep.1b)
+
+# adding young white male
+rep.2a <- rep.1c[rep(seq_len(nrow(rep.1c)), 
+                     each = nrow(comb.young.white.male)),]
+rep.2b <- do.call(rbind, replicate(nrow(rep.1c), 
+                                   comb.young.white.male, 
+                                   simplify=FALSE))
+rep.2c <- cbind(rep.2a, rep.2b)
+
+# adding young non-white male
+rep.3a <- rep.2c[rep(seq_len(nrow(rep.2c)), 
+                     each = nrow(comb.young.non.white.male)),]
+rep.3b <- do.call(rbind, replicate(nrow(rep.2c), 
+                                   comb.young.non.white.male, 
+                                   simplify=FALSE))
+rep.3c <- cbind(rep.3a, rep.3b)
+
+# adding old white female
+rep.4a <- rep.3c[rep(seq_len(nrow(rep.3c)), 
+                     each = nrow(comb.old.white.female)),]
+rep.4b <- do.call(rbind, replicate(nrow(rep.3c), 
+                                   comb.old.white.female, 
+                                   simplify=FALSE))
+rep.4c <- cbind(rep.4a, rep.4b)
+
+#--- break because of vector memory ---
+# adding old non-white female and old white male
+rep.5a <- comb.old.non.white.female[rep(seq_len(nrow(comb.old.non.white.female)), 
+                     each = nrow(comb.old.white.male)),]
+rep.5b <- do.call(rbind, replicate(nrow(comb.old.non.white.female), 
+                                   comb.old.white.male, 
+                                   simplify=FALSE))
+rep.5c <- cbind(rep.5a, rep.5b)
+
+# adding old non-white male
+rep.6a <- rep.5c[rep(seq_len(nrow(rep.5c)), 
+                     each = nrow(comb.old.non.white.male)),]
+rep.6b <- do.call(rbind, replicate(nrow(rep.5c), 
+                                   comb.old.non.white.male, 
+                                   simplify=FALSE))
+rep.6c <- cbind(rep.6a, rep.6b)
+
+a <- nrow(rep.4c)
+b <- nrow(rep.6c)
+a;b
 ```
 
-Combinations new
+stuff from within for-loop
 ```{r}
-
-```
-
-
-
-
-```{r}
-#____ old _____
-
-#set = rawdata[c(44:48),]
-#notset = rawdata[c(1:43),]
-#setmale = sum(set[,4]==2)
-#setfemale = sum(set[,4]==1)
-#notsetmale = sum(notset[,4]==2)
-#notsetfemale = sum(notset[,4]==1)
-
-#combinations
-#njurymale = size_jury/2-0.5
-##njuryfemale = size_jury/2+0.5
-#maleleft = njurymale-setmale
-#femaleleft = njuryfemale-setfemale
-#malecomb = combinations(n=notsetmale,r=maleleft)
-#femalecomb = combinations(n=notsetfemale,r=femaleleft)
-#femalecomb = femalecomb+notsetmale
-
-#malecomb_rep = malecomb[rep(seq_len(nrow(malecomb)), each = nrow(femalecomb)), ]
-#femalecomb_rep = do.call(rbind, replicate(nrow(malecomb), femalecomb, simplify=FALSE))
-#set_rep = matrix(c(35:46),nrow=1)
-#set_rep = set_rep[rep(seq_len(nrow(set_rep)), each = nrow(malecomb_rep)), ]
-#y = cbind(malecomb_rep,femalecomb_rep,set_rep)
-
-goal = read_excel("goals_2.xlsx")
+setwd("~/OneDrive/Beruflich/Peace Child International/Model Citizens Assembly/Climate Crisis/Dataset")
+goal = read_excel("goals_values.xlsx")
 goal = data.frame(goal)
 attnames = read_excel("goals_names.xls")
 goal[2,1] = 100
@@ -353,18 +389,11 @@ rawdata = rawdata[,-c(2:4)]
 ```
 
 
-set up 3D matrix
 ```{r}
-z = nrow(y)
+#3D matrix
 output_first_dim = array(y, dim=c(z,size_jury,1))
 output_extra = array(NA, dim=c(z,size_jury,1))
 output = abind(output_first_dim,output_extra,along=3)
-dim(output)
-output[,,2] = rawdata[output[,,1],2]
-nmale = rowSums(output[,,2]==2)
-nfemale = rowSums(output[,,2]==1)
-parity = ifelse(nmale==male.wanted,TRUE,FALSE)
-output = output[!(parity==FALSE),,]
 z = nrow(output)
 output_extra = array(NA, dim=c(z,size_jury,1))
 output = abind(output,output_extra,along=3)
@@ -377,61 +406,126 @@ output = abind(output,output_extra,along=3)
 output = abind(output,output_extra,along=3)
 output = abind(output,output_extra,along=3)
 output = abind(output,output_extra,along=3)
-
 difempty = array(NA, dim=c(nrow(output),1,12))
 output = abind(output,difempty,along=2)
 nullvector = vector(length=nrow(output))
 nullvector[] = 0
 output[,ncol(output),2] = nullvector
+```
 
 
 
-for (i in 3:12) {
-  output[,,i] = rawdata[output[,,1],i]
-  dif = (rowSums(output[,1:ncol(output)-1,i]==1)/size_jury-goal[3,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==2)/size_jury-goal[4,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==3)/size_jury-goal[5,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==4)/size_jury-goal[6,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==5)/size_jury-goal[7,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==6)/size_jury-goal[8,i-1])^2 +
-    (rowSums(output[,1:ncol(output)-1,i]==7)/size_jury-goal[9,i-1])^2 + 
-    (rowSums(output[,1:ncol(output)-1,i]==8)/size_jury-goal[10,i-1])^2
-  coef = goal[2,i-1]
-  output[,ncol(output),i] = dif*coef
-  print(i)
+the massive for-loop
+```{r}
+index.com <- seq(1, nrow(rep.6c), 1)
+index.com <- seq(1, 4, 1)
+comparison <- matrix(nrow = length(index.com), ncol = size_jury+1)
+count <- 0
+for (m in index.com) {
+  count <- count + 1
+  print(round(100*count/length(index.com)))
+  
+  
+  rep.7 <- rep.6c[m,]
+  y <- cbind(rep.4c, do.call(rbind,replicate(nrow(rep.4c), 
+                                   rep.7, 
+                                   simplify=FALSE)) )
+  #print(m)
+  #____ old _____
+  
+  #set = rawdata[c(44:48),]
+  #notset = rawdata[c(1:43),]
+  #setmale = sum(set[,4]==2)
+  #setfemale = sum(set[,4]==1)
+  #notsetmale = sum(notset[,4]==2)
+  #notsetfemale = sum(notset[,4]==1)
+  
+  #combinations
+  #njurymale = size_jury/2-0.5
+  ##njuryfemale = size_jury/2+0.5
+  #maleleft = njurymale-setmale
+  #femaleleft = njuryfemale-setfemale
+  #malecomb = combinations(n=notsetmale,r=maleleft)
+  #femalecomb = combinations(n=notsetfemale,r=femaleleft)
+  #femalecomb = femalecomb+notsetmale
+  
+  #malecomb_rep = malecomb[rep(seq_len(nrow(malecomb)), each = nrow(femalecomb)), ]
+  #femalecomb_rep = do.call(rbind, replicate(nrow(malecomb), femalecomb, simplify=FALSE))
+  #set_rep = matrix(c(35:46),nrow=1)
+  #set_rep = set_rep[rep(seq_len(nrow(set_rep)), each = nrow(malecomb_rep)), ]
+  #y = cbind(malecomb_rep,femalecomb_rep,set_rep)
+  
+  
+  
+  z = nrow(y)
+  output[,c(1:19),1] = y
+  #dim(output)
+  output[,,2] = rawdata[output[,,1],2]
+  #nmale = rowSums(output[,,2]==2)
+  #nfemale = rowSums(output[,,2]==1)
+  #parity = ifelse(nmale==male.wanted,TRUE,FALSE)
+  #output = output[!(parity==FALSE),,]
+  for (i in 3:12) {
+    output[,,i] = rawdata[output[,,1],i]
+    dif = (rowSums(output[,1:ncol(output)-1,i]==1)/size_jury-goal[3,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==2)/size_jury-goal[4,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==3)/size_jury-goal[5,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==4)/size_jury-goal[6,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==5)/size_jury-goal[7,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==6)/size_jury-goal[8,i-1])^2 +
+      (rowSums(output[,1:ncol(output)-1,i]==7)/size_jury-goal[9,i-1])^2 + 
+      (rowSums(output[,1:ncol(output)-1,i]==8)/size_jury-goal[10,i-1])^2
+    coef = goal[2,i-1]
+    output[,ncol(output),i] = dif*coef
+  }
+  output[,ncol(output),1] = output[,ncol(output),3] + output[,ncol(output),4] + 
+    output[,ncol(output),5] + output[,ncol(output),6] + output[,ncol(output),7] + output[,ncol(output),8] + 
+    output[,ncol(output),9] + output[,ncol(output),10] + output[,ncol(output),11] + output[,ncol(output),12]
+  
+  
+  #most representative model in one for loop
+  k = min(output[,ncol(output),1])
+  k
+  l = match(k,output[,ncol(output),1])
+  comparison[m,] <- output[l,,1]
 }
-output[,ncol(output),1] = output[,ncol(output),2] + output[,ncol(output),3] + output[,ncol(output),4] + 
-  output[,ncol(output),5] + output[,ncol(output),6] + output[,ncol(output),7] + output[,ncol(output),8] + 
-  output[,ncol(output),9] + output[,ncol(output),10] + output[,ncol(output),11] + output[,ncol(output),12]
+```
 
 
-#most representative model
-k = min(output[,ncol(output),1])
+```{r}
+#most representative model overall
+k = min(comparison[,size_jury+1])
 k
-l = match(k,output[,ncol(output),1])
-appl1 = output[l,1,1]
-appl2 = output[l,2,1]
-appl3 = output[l,3,1]
-appl4 = output[l,4,1]
-appl5 = output[l,5,1]
-appl6 = output[l,6,1]
-appl7 = output[l,7,1]
-appl8 = output[l,8,1]
-appl9 = output[l,9,1]
-appl10 = output[l,10,1]
-appl11 = output[l,11,1]
-appl12 = output[l,12,1]
-appl13 = output[l,13,1]
-appl14 = output[l,14,1]
-appl15 = output[l,15,1]
-subset = rawdata[c(appl1,appl2,appl3,appl4,appl5,appl6,appl7,appl8,appl9,appl10,
-                   appl11,appl12,appl13,appl14,appl15),]
+l = match(k,comparison[,size_jury+1])
+
+#change subsequent to finding the indices in the comparison matrix instead
+#appl1 = output[l,1,1]
+#appl2 = output[l,2,1]
+#appl3 = output[l,3,1]
+#appl4 = output[l,4,1]
+#appl5 = output[l,5,1]
+#appl6 = output[l,6,1]
+#appl7 = output[l,7,1]
+#appl8 = output[l,8,1]
+#appl9 = output[l,9,1]
+#appl10 = output[l,10,1]
+#appl11 = output[l,11,1]
+#appl12 = output[l,12,1]
+#appl13 = output[l,13,1]
+#appl14 = output[l,14,1]
+#appl15 = output[l,15,1]
+subset = rawdata[comparison[l,c(1:size_jury)],]
 names = names_and_numbers[subset[,1],c(2:4)]
 names_attributes = responses[subset[,1],c(5:16)]
 final.table = cbind(names,names_attributes)
-write.csv(final.table,"model1.csv")
+#write.csv(final.table,"model1.csv")
 subset = subset[,2:12]
+```
 
+
+
+Plotting
+```{r}
 #graph for all
 for (j in 1:11) {
   a = sum(subset[,j]==1)/size_jury
@@ -481,7 +575,10 @@ for (j in 1:11) {
   if (j==10) ggsave("model1.10.jpg")
   if (j==11) ggsave("model1.11.jpg")
 }
+```
 
+
+```{r}
 #second best
 dim(output)
 output = output[-l,,]
