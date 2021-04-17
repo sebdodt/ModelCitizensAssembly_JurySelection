@@ -67,6 +67,8 @@ rawdata_1 = data.matrix(rawdata_1)
 rawdata = cbind(responses[,c(2:4)],rawdata_1)
 dim(rawdata)
 sum(is.na(rawdata))
+rawdata <- cbind(rawdata, seq(1,nrow(rawdata),1))
+rawdata <- rename(rawdata, Index = 'seq(1, nrow(rawdata), 1)')
 ```
 
 
@@ -128,7 +130,7 @@ old.non.white.male <- non.white.male %>%
 
 Goals
 ```{r}
-size_jury = 21
+size_jury = 23
 white.wanted = 0.4 #relative share
 
 cat1 <- round(size_jury * 0.5 * 0.5 * white.wanted)
@@ -207,18 +209,18 @@ if (sum(cat1,cat2,cat3,cat4,cat5,cat6,cat7,cat8) < size_jury) {
   extra.men <- order(c(nrow(young.white.male) - cat5, nrow(old.white.male) - cat6, 
               nrow(young.non.white.male) - cat7, nrow(old.non.white.male) - cat8), 
               decreasing = TRUE)
-  if (extra.men[2] == 1) cat5 <- cat5 + 1
-  if (extra.men[2] == 2) cat6 <- cat6 + 1
-  if (extra.men[2] == 3) cat7 <- cat7 + 1
-  if (extra.men[2] == 4) cat8 <- cat8 + 1
+  if (extra.men[1] == 1) cat5 <- cat5 + 1
+  if (extra.men[1] == 2) cat6 <- cat6 + 1
+  if (extra.men[1] == 3) cat7 <- cat7 + 1
+  if (extra.men[1] == 4) cat8 <- cat8 + 1
 }
   
 #checking if enough young men
 if (nrow(young.white.male) < cat5) {
   cat5 <- nrow(young.white.male) 
-  if (extra.men[3] == 2) cat6 <- cat6 + 1
-  if (extra.men[3] == 3) cat7 <- cat7 + 1
-  if (extra.men[3] == 4) cat8 <- cat8 + 1
+  if (extra.men[2] == 2) cat6 <- cat6 + 1
+  if (extra.men[2] == 3) cat7 <- cat7 + 1
+  if (extra.men[2] == 4) cat8 <- cat8 + 1
 }
 
 sum(cat1,cat2,cat3,cat4,cat5,cat6,cat7,cat8)
@@ -264,14 +266,34 @@ y = cbind(allnotset.rep,allset.rep)
 
 Combinations new
 ```{r}
-comb.young.white.female <- combinations(n = nrow(young.white.female), r = cat1)
-comb.young.non.white.female <- combinations(n = nrow(young.non.white.female), r = cat3)
-comb.young.white.male <- combinations(n = nrow(young.white.male), r = cat5)
-comb.young.non.white.male <- combinations(n = nrow(young.non.white.male), r = cat7)
-comb.old.white.female <- combinations(n = nrow(old.white.female), r = cat2)
-comb.old.non.white.female <- combinations(n = nrow(old.non.white.female), r = cat4)
-comb.old.white.male <- combinations(n = nrow(old.white.male), r = cat6)
-comb.old.non.white.male <- combinations(n = nrow(old.non.white.male), r = cat8)
+comb.young.white.female <- combinations(n = nrow(young.white.female), 
+                                        r = cat1, 
+                                        young.white.female$Index)
+comb.young.non.white.female <- combinations(n = nrow(young.non.white.female), 
+                                            r = cat3, 
+                                            young.non.white.female$Index)
+comb.young.white.male <- combinations(n = nrow(young.white.male), 
+                                      r = cat5, 
+                                      young.white.male$Index)
+comb.young.non.white.male <- combinations(n = nrow(young.non.white.male), 
+                                          r = cat7, 
+                                          young.non.white.male$Index)
+comb.old.white.female <- combinations(n = nrow(old.white.female), 
+                                      r = cat2, 
+                                      old.white.female$Index)
+comb.old.non.white.female <- combinations(n = nrow(old.non.white.female), 
+                                          r = cat4, 
+                                          old.non.white.female$Index)
+comb.old.white.male <- combinations(n = nrow(old.white.male), 
+                                    r = cat6, 
+                                    old.white.male$Index)
+for (setrow in old.non.white.male$Index) {
+  comb.old.non.white.male <- combinations(n = nrow(old.non.white.male) - 1, 
+                                          r = cat8 - 1,
+                                          old.non.white.male$Index[-setrow])
+  comb.old.non.white.male <- cbind(comb.old.non.white.male, rep(setrow, nrow(comb.oldnon.white.male)))
+}
+
 
 #number of combinations
 ncombinations <- nrow(comb.young.white.female) * nrow(comb.young.non.white.female) * 
