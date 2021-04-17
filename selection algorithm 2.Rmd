@@ -311,13 +311,6 @@ for (setrow in old.non.white.male$Index) {
 }
 
 
-#number of combinations
-ncombinations <- nrow(comb.young.white.female) * nrow(comb.young.non.white.female) * 
-  nrow(comb.young.white.male) * nrow(comb.young.non.white.male) *
-  nrow(comb.old.white.female) * nrow(comb.old.non.white.female) * 
-  nrow(comb.old.white.male) * nrow(comb.old.non.white.male) 
-
-
 ##combinations matrix
 # adding young white female and young non-white female
 rep.1a <- comb.young.white.female[rep(seq_len(nrow(comb.young.white.female)), 
@@ -350,6 +343,7 @@ rep.4b <- do.call(rbind, replicate(nrow(rep.3c),
                                    comb.old.white.female, 
                                    simplify=FALSE))
 rep.4c <- cbind(rep.4a, rep.4b)
+rep.4c.double <- rep.4c
 
 #--- break because of vector memory ---
 # adding old non-white female and old white male
@@ -367,11 +361,150 @@ rep.6b <- do.call(rbind, replicate(nrow(rep.5c),
                                    comb.old.non.white.male, 
                                    simplify=FALSE))
 rep.6c <- cbind(rep.6a, rep.6b)
+rep.6c.double <- rep.6c
 
-a <- nrow(rep.4c)
-b <- nrow(rep.6c)
-a;b
+
 ```
+
+fixing certain respondents 
+```{r}
+fixed <- c(seq(10,20,1))
+
+possible.in.4c <- c(young.white.female$Index,young.non.white.female$Index,young.white.male$Index,young.non.white.male$Index,old.white.female$Index)
+fixed.4c <- vector(length = length(fixed))
+fixed.4c[] <- NA
+fixed.6c <- vector(length = length(fixed))
+fixed.6c[] <- NA
+for (i in 1:length(fixed)) {
+  if(any(possible.in.4c == fixed[i]) == TRUE) fixed.4c[i] <- fixed[i] else
+    fixed.6c[i] <- fixed[i]
+}
+fixed.4c <- fixed.4c[!is.na(fixed.4c)]
+fixed.6c <- fixed.6c[!is.na(fixed.6c)]
+
+if (length(fixed.4c)>0) {
+  deleteme <- vector(length = nrow(rep.4c))
+  deleteme[] <- TRUE
+  for (i in 1:nrow(rep.4c)) {
+    existing <- 0
+    for (j in 1:length(fixed.4c)) {
+      if (any(rep.4c[i,] == fixed.4c[j])) existing <- existing + 1
+    }
+    if (existing == length(fixed.4c)) deleteme[i] <- FALSE
+    if (round(i/1000000) == i/1000000) print(round(50*i/nrow(rep.4c)))
+  }
+  print(nrow(rep.4c))
+  print(nrow(rep.4c)-sum(deleteme))
+  rep.4c <- as_tibble(cbind(rep.4c, deleteme)) %>%
+    filter(deleteme == 0) %>%
+    select(-deleteme) %>%
+    as.matrix()
+  print(nrow(rep.4c))
+  if(nrow(rep.4c) == 0) {
+    rep.4c <- rep.4c.double
+    deleteme <- vector(length = nrow(rep.4c))
+    deleteme[] <- TRUE
+    for (i in 1:nrow(rep.4c)) {
+      existing <- 0
+      for (j in 1:length(fixed.4c)) {
+        if (any(rep.4c[i,] == fixed.4c[j])) existing <- existing + 1
+      }
+      if (existing == length(fixed.4c)-1) deleteme[i] <- FALSE
+      if (round(i/1000000) == i/1000000) print("leaving one out")
+    }
+    print(nrow(rep.4c))
+    print(nrow(rep.4c)-sum(deleteme))
+    rep.4c <- as_tibble(cbind(rep.4c, deleteme)) %>%
+      filter(deleteme == 0) %>%
+      select(-deleteme) %>%
+      as.matrix()
+    print(nrow(rep.4c))
+    if(nrow(rep.4c) == 0) {
+      rep.4c <- rep.4c.double
+      deleteme <- vector(length = nrow(rep.4c))
+      deleteme[] <- TRUE
+      for (i in 1:nrow(rep.4c)) {
+        existing <- 0
+        for (j in 1:length(fixed.4c)) {
+          if (any(rep.4c[i,] == fixed.4c[j])) existing <- existing + 1
+        }
+        if (existing == length(fixed.4c)-1) deleteme[i] <- FALSE
+        if (round(i/1000000) == i/1000000) print("leaving two out")
+      }
+      print(nrow(rep.4c))
+      print(nrow(rep.4c)-sum(deleteme))
+      rep.4c <- as_tibble(cbind(rep.4c, deleteme)) %>%
+        filter(deleteme == 0) %>%
+        select(-deleteme) %>%
+        as.matrix()
+      print(nrow(rep.4c))
+    }
+  }
+}
+if (length(fixed.6c)>0) {
+  deleteme <- vector(length = nrow(rep.6c))
+  deleteme[] <- TRUE
+  for (i in 1:nrow(rep.6c)) {
+    existing <- 0
+    for (j in 1:length(fixed.6c)) {
+      if (any(rep.6c[i,] == fixed.6c[j])) existing <- existing + 1
+    }
+    if (existing == length(fixed.6c)) deleteme[i] <- FALSE
+    if (round(i/1000000) == i/1000000) print(50+round(50*i/nrow(rep.6c)))
+  }
+  print(nrow(rep.6c))
+  print(nrow(rep.6c)-sum(deleteme))
+  rep.6c <- as_tibble(cbind(rep.6c, deleteme)) %>%
+    filter(deleteme == 0) %>%
+    select(-deleteme) %>%
+    as.matrix()
+  print(nrow(rep.6c))
+  if (nrow(rep.6c) == 0) {
+    rep.6c <- rep.6c.double
+    deleteme <- vector(length = nrow(rep.6c))
+    deleteme[] <- TRUE
+    for (i in 1:nrow(rep.6c)) {
+      existing <- 0
+      for (j in 1:length(fixed.6c)) {
+        if (any(rep.6c[i,] == fixed.6c[j])) existing <- existing + 1
+      }
+      if (existing == length(fixed.6c)-1) deleteme[i] <- FALSE
+      if (round(i/1000000) == i/1000000) print("leaving one out")
+    }
+    print(nrow(rep.6c))
+    print(nrow(rep.6c)-sum(deleteme))
+    rep.6c <- as_tibble(cbind(rep.6c, deleteme)) %>%
+      filter(deleteme == 0) %>%
+      select(-deleteme) %>%
+      as.matrix()
+    print(nrow(rep.6c))
+    if (nrow(rep.6c) == 0) {
+      rep.6c <- rep.6c.double
+      deleteme <- vector(length = nrow(rep.6c))
+      deleteme[] <- TRUE
+      for (i in 1:nrow(rep.6c)) {
+        existing <- 0
+        for (j in 1:length(fixed.6c)) {
+          if (any(rep.6c[i,] == fixed.6c[j])) existing <- existing + 1
+        }
+        if (existing == length(fixed.6c)-2) deleteme[i] <- FALSE
+        if (round(i/1000000) == i/1000000) print("leaving two out")
+      }
+      print(nrow(rep.6c))
+      print(nrow(rep.6c)-sum(deleteme))
+      rep.6c <- as_tibble(cbind(rep.6c, deleteme)) %>%
+        filter(deleteme == 0) %>%
+        select(-deleteme) %>%
+        as.matrix()
+      print(nrow(rep.6c))
+    }
+  }
+}
+
+
+```
+
+
 
 stuff from within for-loop
 ```{r}
@@ -391,7 +524,8 @@ rawdata = rawdata[,-c(2:4)]
 
 ```{r}
 #3D matrix
-output_first_dim = array(y, dim=c(z,size_jury,1))
+z = length(rep.4c)
+output_first_dim = array(NA, dim=c(z,size_jury,1))
 output_extra = array(NA, dim=c(z,size_jury,1))
 output = abind(output_first_dim,output_extra,along=3)
 z = nrow(output)
@@ -418,14 +552,21 @@ output[,ncol(output),2] = nullvector
 the massive for-loop
 ```{r}
 index.com <- seq(1, nrow(rep.6c), 1)
-index.com <- seq(1, 4, 1)
 comparison <- matrix(nrow = length(index.com), ncol = size_jury+1)
 count <- 0
-for (m in index.com) {
-  count <- count + 1
+n <- 1
+time.start <- Sys.time()
+
+time.stop <- Sys.time()
+time.elapsed <- time.stop - time.start
+
+while (n < length(index.com)) {
+  m <- index.com[n]
+  #indicator
   print(round(100*count/length(index.com)))
+  count <- count + 1
   
-  
+  #combination to choose
   rep.7 <- rep.6c[m,]
   y <- cbind(rep.4c, do.call(rbind,replicate(nrow(rep.4c), 
                                    rep.7, 
@@ -458,7 +599,7 @@ for (m in index.com) {
   
   
   z = nrow(y)
-  output[,c(1:19),1] = y
+  output[,c(1:size_jury),1] = y
   #dim(output)
   output[,,2] = rawdata[output[,,1],2]
   #nmale = rowSums(output[,,2]==2)
@@ -488,6 +629,20 @@ for (m in index.com) {
   k
   l = match(k,output[,ncol(output),1])
   comparison[m,] <- output[l,,1]
+  n <- n + 1
+  if (count == 5) {
+    time.elapsed <- difftime(Sys.time(), time.start, units = "mins")
+    n.left <- length(index.com) - n
+    time.left <- time.elapsed/count * n.left
+    if (time.left > 5) n <- length(index.com)
+    print(round(time.left))
+  }
+  if (count != 5) {
+    time.elapsed <- difftime(Sys.time(), time.start, units = "mins")
+    n.left <- length(index.com) - n
+    time.left <- time.elapsed/count * n.left
+    print(round(time.left))
+  }
 }
 ```
 
@@ -520,6 +675,7 @@ names_attributes = responses[subset[,1],c(5:16)]
 final.table = cbind(names,names_attributes)
 #write.csv(final.table,"model1.csv")
 subset = subset[,2:12]
+final.table
 ```
 
 
