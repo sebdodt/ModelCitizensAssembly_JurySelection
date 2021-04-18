@@ -368,7 +368,7 @@ rep.6c.double <- rep.6c
 
 fixing certain respondents 
 ```{r}
-fixed <- c(seq(10,20,1))
+fixed <- c(1,4,6,7,9,30,10,12,14,15,45)
 
 possible.in.4c <- c(young.white.female$Index,young.non.white.female$Index,young.white.male$Index,young.non.white.male$Index,old.white.female$Index)
 fixed.4c <- vector(length = length(fixed))
@@ -390,7 +390,7 @@ if (length(fixed.4c)>0) {
     for (j in 1:length(fixed.4c)) {
       if (any(rep.4c[i,] == fixed.4c[j])) existing <- existing + 1
     }
-    if (existing == length(fixed.4c)) deleteme[i] <- FALSE
+    if (existing == length(fixed.4c)-1) deleteme[i] <- FALSE
     if (round(i/1000000) == i/1000000) print(round(50*i/nrow(rep.4c)))
   }
   print(nrow(rep.4c))
@@ -428,7 +428,7 @@ if (length(fixed.4c)>0) {
         for (j in 1:length(fixed.4c)) {
           if (any(rep.4c[i,] == fixed.4c[j])) existing <- existing + 1
         }
-        if (existing == length(fixed.4c)-1) deleteme[i] <- FALSE
+        if (existing == length(fixed.4c)-2) deleteme[i] <- FALSE
         if (round(i/1000000) == i/1000000) print("leaving two out")
       }
       print(nrow(rep.4c))
@@ -501,7 +501,7 @@ if (length(fixed.6c)>0) {
   }
 }
 
-
+paste0("Testing ",nrow(rep.6c)*nrow(rep.4c)," combinations")
 ```
 
 
@@ -560,10 +560,12 @@ time.start <- Sys.time()
 time.stop <- Sys.time()
 time.elapsed <- time.stop - time.start
 
-while (n < length(index.com)) {
+while (n <= length(index.com)) {
   m <- index.com[n]
   #indicator
-  print(round(100*count/length(index.com)))
+  if (100*count/length(index.com) == round(100*count/length(index.com))) {
+    print(paste0(round(100*count/length(index.com)),"%"))
+  } 
   count <- count + 1
   
   #combination to choose
@@ -634,14 +636,15 @@ while (n < length(index.com)) {
     time.elapsed <- difftime(Sys.time(), time.start, units = "mins")
     n.left <- length(index.com) - n
     time.left <- time.elapsed/count * n.left
-    if (time.left > 5) n <- length(index.com)
+    if (time.left > 15) n <- length(index.com)
     print(round(time.left))
   }
   if (count != 5) {
     time.elapsed <- difftime(Sys.time(), time.start, units = "mins")
     n.left <- length(index.com) - n
     time.left <- time.elapsed/count * n.left
-    print(round(time.left))
+    if (count < 10) print(round(time.left))
+    if (count >= 10) if (round(count/20) == count/20) print(round(time.left))
   }
 }
 ```
@@ -683,7 +686,7 @@ final.table
 Plotting
 ```{r}
 #graph for all
-for (j in 1:11) {
+for (j in c(1:3,5:11)) {
   a = sum(subset[,j]==1)/size_jury
   b = sum(subset[,j]==2)/size_jury
   c = sum(subset[,j]==3)/size_jury
