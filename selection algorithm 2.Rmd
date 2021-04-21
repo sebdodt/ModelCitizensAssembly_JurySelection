@@ -55,6 +55,7 @@ for (i in 1:nrow(responses)) {
   if (responses[i,13] == "UK/Ireland") responses[i,13] <- "4"
   if (responses[i,13] == "Mixed") responses[i,13] <- "5"
   if (responses[i,13] == "White Mixed or Multiple") responses[i,13] <- "5"
+  if (responses[i,13] == "Creole/Mestizo") responses[i,13] <- "5"
 }
 responses[,13] <- as.integer(unlist(responses[,13]))
 ```
@@ -383,7 +384,7 @@ rep.6c.double <- rep.6c
 
 fixing certain respondents 
 ```{r}
-fixed <- c(1,4,6,7,9,10,12,14,15,39,41,45)
+fixed <- c(1,4,6,7,9,10,12,14,15,40)
 
 possible.in.4c <- c(young.white.female$Index,young.non.white.female$Index,young.white.male$Index,young.non.white.male$Index,old.white.female$Index)
 fixed.4c <- vector(length = length(fixed))
@@ -516,7 +517,7 @@ if (length(fixed.6c)>0) {
   }
 }
 
-paste0("Testing ",nrow(rep.6c)*nrow(rep.4c)," combinations")
+paste0("Testing ",round(nrow(rep.6c)*nrow(rep.4c)/1000000,1)," million combinations")
 ```
 
 
@@ -652,7 +653,7 @@ while (n <= length(index.com)) {
   n.left <- length(index.com) - n
   time.left <- time.elapsed * n.left
   if (count == 5) {
-    if (time.left > 60) n <- length(index.com)
+    if (time.left > 120) n <- length(index.com)
     print(round(time.left))
   }
   if (count != 5) {
@@ -668,7 +669,10 @@ while (n <= length(index.com)) {
 k = min(comparison[,size_jury+1])
 k
 l = match(k,comparison[,size_jury+1])
+```
 
+
+```{r}
 #change subsequent to finding the indices in the comparison matrix instead
 #appl1 = output[l,1,1]
 #appl2 = output[l,2,1]
@@ -687,7 +691,7 @@ l = match(k,comparison[,size_jury+1])
 #appl15 = output[l,15,1]
 subset = rawdata[comparison[l,c(1:size_jury)],]
 names = names_and_numbers[subset[,1],c(2:4)]
-names_attributes = original_responses[subset[,1],c(5:16)]
+names_attributes = original_responses[subset[,1],c(5:21)]
 final.table = cbind(names,names_attributes)
 write.csv(final.table,"model1.csv")
 subset = subset[,2:12]
@@ -710,14 +714,14 @@ for (j in relevant) {
   g = sum(subset[,j]==7)/size_jury
   h = sum(subset[,j]==8)/size_jury
   y <- c(a,b,c,d,e,f,g,h)
-  aa = ifelse(as.character(attnames[2,j])=="0","z",as.character(attnames[2,j]))
-  bb = ifelse(as.character(attnames[3,j])=="0","zz",as.character(attnames[3,j]))
-  cc = ifelse(as.character(attnames[4,j])=="0","zzz",as.character(attnames[4,j]))
-  dd = ifelse(as.character(attnames[5,j])=="0","zzzzz",as.character(attnames[5,j]))
-  ee = ifelse(as.character(attnames[6,j])=="0","zzzz",as.character(attnames[6,j]))
-  ff = ifelse(as.character(attnames[7,j])=="0","zzz",as.character(attnames[7,j]))
-  gg = ifelse(as.character(attnames[8,j])=="0","zz",as.character(attnames[8,j]))
-  hh = ifelse(as.character(attnames[9,j])=="0","z",as.character(attnames[9,j]))
+  aa = ifelse(as.character(attnames[2,j])=="0","  ",as.character(attnames[2,j]))
+  bb = ifelse(as.character(attnames[3,j])=="0","   ",as.character(attnames[3,j]))
+  cc = ifelse(as.character(attnames[4,j])=="0","    ",as.character(attnames[4,j]))
+  dd = ifelse(as.character(attnames[5,j])=="0","     ",as.character(attnames[5,j]))
+  ee = ifelse(as.character(attnames[6,j])=="0","    ",as.character(attnames[6,j]))
+  ff = ifelse(as.character(attnames[7,j])=="0","   ",as.character(attnames[7,j]))
+  gg = ifelse(as.character(attnames[8,j])=="0","  ",as.character(attnames[8,j]))
+  hh = ifelse(as.character(attnames[9,j])=="0"," ",as.character(attnames[9,j]))
   x <- c(aa,bb,cc,dd,ee,ff,gg,hh)
   x <- factor(x,levels=x)
   p = ggplot() +
